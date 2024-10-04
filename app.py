@@ -1,5 +1,9 @@
 from dotenv import load_dotenv
 import chainlit as cl
+import base64
+from agents.base_agent import Agent
+from agents.implementation_agent import ImplementationAgent
+from prompts import PLANNING_PROMPT
 
 load_dotenv()
 
@@ -18,15 +22,16 @@ gen_kwargs = {
     "temperature": 0.2
 }
 
-SYSTEM_PROMPT = """\
-You are a pirate.
-"""
+# Create an instance of the Implementation agent class
+implementation_agent = ImplementationAgent(name="Implementation Agent", client=client)
+
+# Create an instance of the Planning agent class
+planning_agent = Agent(name="Planning Agent", client=client, prompt=PLANNING_PROMPT, agents={"implementation_agent": implementation_agent})
 
 @observe
 @cl.on_chat_start
 def on_chat_start():    
-    message_history = [{"role": "system", "content": SYSTEM_PROMPT}]
-    cl.user_session.set("message_history", message_history)
+    cl.user_session.set("message_history", [])
 
 @observe
 async def generate_response(client, message_history, gen_kwargs):
@@ -46,11 +51,35 @@ async def generate_response(client, message_history, gen_kwargs):
 @observe
 async def on_message(message: cl.Message):
     message_history = cl.user_session.get("message_history", [])
-    message_history.append({"role": "user", "content": message.content})
-    
-    response_message = await generate_response(client, message_history, gen_kwargs)
 
-    message_history.append({"role": "assistant", "content": response_message.content})
+    # Processing images exclusively
+    images = [file for file in message.elements if "image" in file.mime] if message.elements else []
+
+    if images:
+        # Read the first image and encode it to base64
+        with open(images[0].path, "rb") as f:
+            base64_image = base64.b64encode(f.read()).decode('utf-8')
+        message_history.append({
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": message.content
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{base64_image}"
+                    }
+                }
+            ]
+        })
+    else:
+        message_history.append({"role": "user", "content": message.content})
+    
+    response_message = await planning_agent.execute(message_history)
+
+    message_history.append({"role": "assistant", "content": response_message})
     cl.user_session.set("message_history", message_history)
 
 if __name__ == "__main__":

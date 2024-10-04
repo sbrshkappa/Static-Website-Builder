@@ -1,6 +1,6 @@
-# Chainlit Starter App
+# React Site Builder
 
-This project is a starter Chainlit application that demonstrates a simple integration with OpenAI's API. It showcases the following key features:
+This is a project that builds out a static react site based on an image of the design that you provide to OpenAI. The app leverages LLM Agent capabilities to build out the site. It showcases the following key features:
 
 1. **OpenAI Integration**: The app is connected to OpenAI's API, allowing it to leverage state-of-the-art language models for generating responses.
 
@@ -19,6 +19,7 @@ As a convenience, on start of a new chat session, a system prompt is added as th
 ### 1. Create a virtual environment
 
 First, create a virtual environment to isolate the project dependencies:
+
 ```bash
 python -m venv .venv
 ```
@@ -53,7 +54,7 @@ To run the app, use the following command:
 
 ```bash
 chainlit run app.py -w
-``` 
+```
 
 ## Updating dependencies
 
@@ -62,11 +63,13 @@ If you need to update the project dependencies, follow these steps:
 1. Update the `requirements.in` file with the new package or version.
 
 2. Install `pip-tools` if you haven't already:
+
    ```bash
    pip install pip-tools
    ```
 
 3. Compile the new `requirements.txt` file:
+
    ```bash
    pip-compile requirements.in
    ```
