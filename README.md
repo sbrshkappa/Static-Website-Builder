@@ -1,4 +1,4 @@
-# Static Website Builder
+# 🚀 Static Website Builder 🚀
 
 This is a project that builds out a static react site based on an image of the design that you provide to OpenAI. The app leverages LLM Agent capabilities to build out the site. It showcases the following key features:
 
